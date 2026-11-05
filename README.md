@@ -1,7 +1,7 @@
 This repository contains code that I have written to better understand the inner workings of a VPN by implementing one in Golang natively.
 
 ## Stages
-1. Create a Tunnel/Tap interface (Implemented)
+1. [Create a Tunnel/Tap interface](/docs/create-and-config-iface.md)
 2. Read/Send data(packets)   
 3. Encapsulate Packet - Custom Payload
     1. UDP  
