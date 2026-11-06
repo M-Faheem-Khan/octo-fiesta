@@ -21,7 +21,7 @@ func InspectPacket(packet []byte) {
 	ihl := int(versionAndIHL & 0x0F) // IHL in 32-bit WORDS
 	ipHeaderLen := ihl * 4           // total length in bytes
 
-	totalLength := int(packet[2]<<8) | int(packet[3])
+	totalLength := int(packet[2])<<8 | int(packet[3])
 	protocol := packet[9] // protocol number(1=ICMP)
 	srcIp := [4]byte{packet[12], packet[13], packet[14], packet[15]}
 	dstIp := [4]byte{packet[16], packet[17], packet[18], packet[19]}
