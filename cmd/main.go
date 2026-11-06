@@ -26,5 +26,6 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Printf("Read %d bytes: % x.\n", n, buf[:min(n, 32)])
+		InspectPacket(buf[:n])
 	}
 }
