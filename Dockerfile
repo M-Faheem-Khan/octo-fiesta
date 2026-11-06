@@ -4,7 +4,7 @@ RUN mkdir /build
 COPY . /build/
 WORKDIR /build
 RUN go mod tidy
-RUN CGO_ENABLED=0 go build -o tunnel cmd/main.go
+RUN CGO_ENABLED=0 go build -o tunnel ./cmd
 
 # Deploy Stage
 FROM alpine:3.20
