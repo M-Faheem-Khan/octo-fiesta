@@ -28,7 +28,7 @@ func getInterface() *os.File {
 		log.Fatal(err)
 	}
 
-	log.Printf("Interface(%s) assigned IP: %s", ifname, ipAddr)
+	log.Printf("Interface(%s) assigned IP: '%s'", ifname, ipAddr)
 	return fd
 }
 
@@ -45,7 +45,15 @@ func main() {
 	switch mode {
 	case "server":
 		fmt.Printf("Running in %s mode.\n", mode)
-		getInterface()
+		tunFd := getInterface()
+		buf := make([]byte, 2048)
+		for {
+			stream, err := tunFd.Read(buf)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("Read %d bytes: % x.\n", stream, buf[:min(stream, 32)])
+		}
 	case "client":
 		fmt.Printf("Running in %s mode.\n", mode)
 	default:
