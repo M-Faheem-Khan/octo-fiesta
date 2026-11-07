@@ -2,8 +2,8 @@ package iface
 
 import (
 	"fmt"
+	"log"
 	"net"
-	"net/netip"
 	"os"
 	"unsafe"
 
@@ -64,6 +64,9 @@ func SetUpIface(name, cidr string) (string, error) {
 	if ip4 == nil {
 		return "", fmt.Errorf("%q is not an IPv4 address", cidr)
 	}
+
+	log.Printf("ip4: %s\n", ip4.String())
+
 	mask := ipnet.Mask // 4 bytes for an IPv4 CIDR
 
 	s, err := unix.Socket(unix.AF_INET, unix.SOCK_DGRAM, 0)
@@ -79,6 +82,10 @@ func SetUpIface(name, cidr string) (string, error) {
 	copy(ar.Addr[:], ip4)
 	if err := ioctl(s, unix.SIOCSIFADDR, unsafe.Pointer(&ar)); err != nil {
 		return "", fmt.Errorf("SIOCSIFADDR: %w", err)
+	}
+
+	if err := ioctl(s, unix.SIOCGIFADDR, unsafe.Pointer(&ar)); err != nil {
+		return "", fmt.Errorf("SIOCGIFADDR: %w", err)
 	}
 
 	// 2. Set the netmask.
@@ -101,11 +108,9 @@ func SetUpIface(name, cidr string) (string, error) {
 		return "", fmt.Errorf("SIOCSIFFLAGS: %w", err)
 	}
 
-	// Get the IP
-	if err := ioctl(s, unix.SIOCGIFADDR, unsafe.Pointer(&ar)); err != nil {
-		return "", fmt.Errorf("SIOCSIFADDR: %w", err)
-	}
-
 	// Return IP
-	return netip.AddrFrom4(ar.Addr).String(), nil
+	ipBytes := ar.Addr[:]
+	ip = net.IPv4(ipBytes[0], ipBytes[1], ipBytes[2], ipBytes[3])
+
+	return ip.String(), nil
 }
