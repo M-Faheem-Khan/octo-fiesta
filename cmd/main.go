@@ -18,8 +18,6 @@ func getInterface() *os.File {
 		log.Fatal(err)
 	}
 
-	defer fd.Close()
-
 	log.Printf("Created Interface: %s", ifname)
 	log.Printf("Configuring Interface: %s", ifname)
 
