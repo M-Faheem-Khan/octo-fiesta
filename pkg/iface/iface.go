@@ -3,6 +3,7 @@ package iface
 import (
 	"fmt"
 	"net"
+	"net/netip"
 	"os"
 	"unsafe"
 
@@ -100,6 +101,11 @@ func SetUpIface(name, cidr string) (string, error) {
 		return "", fmt.Errorf("SIOCSIFFLAGS: %w", err)
 	}
 
+	// Get the IP
+	if err := ioctl(s, unix.SIOCGIFADDR, unsafe.Pointer(&ar)); err != nil {
+		return "", fmt.Errorf("SIOCSIFADDR: %w", err)
+	}
+
 	// Return IP
-	return string(ar.Addr[:]), nil
+	return netip.AddrFrom4(ar.Addr).String(), nil
 }
