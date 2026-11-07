@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
 	"M-Faheem-Khan/octo-fiesta/pkg/iface"
+	"M-Faheem-Khan/octo-fiesta/pkg/packet"
 )
 
 const ifaceName = "tun0"
@@ -42,7 +42,7 @@ func main() {
 
 	switch mode {
 	case "server":
-		fmt.Printf("Running in %s mode.\n", mode)
+		log.Printf("Running in %s mode.\n", mode)
 		tunFd := getInterface()
 		buf := make([]byte, 2048)
 		for {
@@ -50,12 +50,12 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Printf("Read %d bytes: % x.\n", stream, buf[:min(stream, 32)])
+			packet.InspectPacket(buf[:stream])
 		}
 	case "client":
-		fmt.Printf("Running in %s mode.\n", mode)
+		log.Printf("Running in %s mode.\n", mode)
 	default:
-		fmt.Printf("Error: Invalid mode(server/client), '%s' not defined.\n", mode)
+		log.Printf("Error: Invalid mode(server/client), '%s' not defined.\n", mode)
 		os.Exit(1)
 	}
 }
