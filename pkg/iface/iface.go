@@ -2,7 +2,6 @@ package iface
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"unsafe"
@@ -64,8 +63,6 @@ func SetUpIface(name, cidr string) (string, error) {
 	if ip4 == nil {
 		return "", fmt.Errorf("%q is not an IPv4 address", cidr)
 	}
-
-	log.Printf("ip4: %s\n", ip4.String())
 
 	mask := ipnet.Mask // 4 bytes for an IPv4 CIDR
 
