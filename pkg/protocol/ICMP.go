@@ -1,6 +1,9 @@
 package protocol
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"net"
+)
 
 func BuildIcmpRequest(srcIp, dstIp string) []byte {
 	// 0                   1                   2                   3
@@ -10,7 +13,7 @@ func BuildIcmpRequest(srcIp, dstIp string) []byte {
 	// | (0x4) | (0x5) |    (0x00)     |          (0x003B = 59)        |
 	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	// |         Identification        |Flags|     Fragment Offset     |
-	// |         (0x3039 = 12345)      |0 1 0|       (0x0000)        |
+	// |         (0x3039 = 12345)      |0 1 0|       (0x0000)          |
 	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 	// |  Time to Live |   Protocol    |       Header Checksum         |
 	// |    (0x40)     |  (0x01=ICMP)  |           (0x0000)            |
@@ -46,7 +49,7 @@ func BuildIcmpRequest(srcIp, dstIp string) []byte {
 	binary.BigEndian.PutUint16(packet[2:4], uint16(totalLength))
 	// identification: set by sender in our case it doesn't
 	// matter as we are only sending a single packet)
-	binary.BigEndian.PutUint16(packet[5:6], uint16(12345))
+	binary.BigEndian.PutUint16(packet[4:6], 0x3039)
 	// Flags: Don't fragment flag set(010)
 	// flags: reserved|don't fragment|more fragment
 	// flag(0x4) + fragment(0x0000) -> 0x4000 -> 0100 0000 0000 0000
@@ -55,13 +58,19 @@ func BuildIcmpRequest(srcIp, dstIp string) []byte {
 	packet[8] = 64 // TTL -> 64 -> 01000000 -> 0x40
 	packet[9] = 1  // Protocol(ICMP)
 
-	// setting checksum to 0
+	// setting checksum to 0 (computed below once addresses are filled in)
 	binary.BigEndian.PutUint16(packet[10:12], 0x0000)
 
+	parsedSrc := net.ParseIP(srcIp).To4()
+	parsedDst := net.ParseIP(dstIp).To4()
+
 	// Source IP (bytes 12-15)
-	copy(packet[12:16], srcIp)
+	copy(packet[12:16], parsedSrc)
 	// Destination IP (bytes 16-19)
-	copy(packet[16:20], dstIp)
+	copy(packet[16:20], parsedDst)
+
+	// IP header checksum (covers the 20-byte header only)
+	binary.BigEndian.PutUint16(packet[10:12], calculateChecksum(packet[:ipHeaderLength]))
 
 	// Building ICMP Header
 	icmpHeader := packet[20:]
