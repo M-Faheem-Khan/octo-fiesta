@@ -5,3 +5,9 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
+    sysctls:
+      # Kernel forwards packets between tun1 (client) and tun0 (server)
+      - net.ipv4.ip_forward=1
+      # Disable reverse-path filtering so forwarded packets aren't dropped
+      - net.ipv4.conf.all.rp_filter=0
+      - net.ipv4.conf.default.rp_filter=0
